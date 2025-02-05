@@ -6,12 +6,23 @@ import MessageSkeleton from "./skeletons/MessageSkeleton "
 import { useAuth } from "../store/useAuth"
 import { formatMessageTime } from "../lib/utils";
 export default function ChatContainer(){
-  const {messages,getMessages,isMessagesLoading,selectedUser}=useChatStore()
+  const {messages,getMessages,isMessagesLoading,selectedUser, unsubscribeFromMessages,subscribeToMessages}=useChatStore()
   const messageEndRef = useRef(null);
   useEffect(()=>{
-    getMessages(selectedUser._id)
-  },[selectedUser._id,getMessages])
-const {authUser}=useAuth()
+    getMessages(selectedUser._id);
+    subscribeToMessages();
+    return ()=>unsubscribeFromMessages();
+  },[selectedUser._id,getMessages,unsubscribeFromMessages,subscribeToMessages])
+
+  useEffect(()=>{
+    if(messageEndRef.current&&messages){
+      messageEndRef.current.scrollIntoView({behavior:"smooth"});
+    }
+      
+
+  },[messages])
+    
+  const {authUser}=useAuth()
   if(isMessagesLoading)
     {return (
     <div className="flex-1 flex flex-col overflow-auto">
@@ -20,8 +31,6 @@ const {authUser}=useAuth()
           <MessageInput/>
     </div>
   )}
-    
-  
     return(
       <div className="flex-1 flex flex-col overflow-auto">
         <ChatHeader/>
